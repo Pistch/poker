@@ -1,0 +1,26 @@
+.wrapper {
+    width: calc(var(--base) * var(--card-width-factor));
+    height: calc(var(--base) * var(--card-height-factor));
+    border: 1px gray solid;
+    border-radius: 5px;
+    padding: var(--base);
+    display: flex;
+    flex-direction: column;
+
+    background: whitesmoke;
+}
+
+.edgeContainer {
+    flex-basis: calc(var(--base) * 2);
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.centerContainer {
+    flex-grow: 1;
+}
+
+.reversedEdgeContainer {
+    composes: edgeContainer;
+    transform: rotate(180deg);
+}

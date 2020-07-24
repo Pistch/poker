@@ -1,0 +1,17 @@
+.wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+    margin: calc(var(--base) * 2);
+}
+
+.wrapper.stacked {
+    min-width: calc(var(--base) * var(--card-width-factor));
+    min-height: calc(var(--base) * var(--card-height-factor));
+}
+
+.wrapper.stacked .card {
+    position: absolute;
+    top: 0;
+    left: 0;
+}

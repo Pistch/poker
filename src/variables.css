@@ -1,0 +1,6 @@
+* {
+  --base: 5px;
+
+  --card-width-factor: 12;
+  --card-height-factor: 20;
+}
