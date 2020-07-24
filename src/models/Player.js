@@ -53,7 +53,12 @@ export default class Player {
   }
 
   performAction(availableActions) {
-    const actionsPriority = [PLAYER_ACTIONS.CHECK, PLAYER_ACTIONS.CALL, PLAYER_ACTIONS.FOLD];
+    const actionsPriority = [
+      PLAYER_ACTIONS.CHECK,
+      Math.random() > 0.8 && PLAYER_ACTIONS.RAISE,
+      PLAYER_ACTIONS.CALL,
+      PLAYER_ACTIONS.FOLD
+    ].filter(Boolean);
     const action = actionsPriority.find(actionName => {
       if (!availableActions[actionName]) {
         return null;
@@ -62,6 +67,6 @@ export default class Player {
       return true;
     });
 
-    return { action, amount: 0 };
+    return { action, amount: 100 };
   }
 }

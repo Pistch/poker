@@ -232,7 +232,7 @@ export default class Combination {
       return 0;
     }
 
-    return Math.max(...straights.map(straight => Math.max(...straight.map(straight.rank.value))));
+    return Math.max(...straights.map(straight => Math.max(...straight.map(card => card.rank.value))));
   }
 
   [COMBINATION_NAMES.ROYAL_FLUSH]() {

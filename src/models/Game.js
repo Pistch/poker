@@ -18,12 +18,18 @@ export default class Game {
       isFinished: false,
       smallBlind: 50,
       bets: {},
-      log: []
+      log: [],
+      inactivePlayers: {},
+      canContinue: true
     });
   }
 
-  get isFinished() {
-    return Boolean(this._gen);
+  get activePlayers() {
+    return this.players.filter(player => !this.state.inactivePlayers[player.name]);
+  }
+
+  get maxBet() {
+    return Math.max(...Object.values(this.state.bets));
   }
 
   _getNextCard() {
@@ -40,7 +46,7 @@ export default class Game {
     const logEntry = [playerName, operation, amount].filter(Boolean);
     this.state.log = [...this.state.log, logEntry];
 
-    console.log(logEntry);
+    // console.log(logEntry);
   }
 
   _raise(player, amount) {
@@ -51,8 +57,18 @@ export default class Game {
     };
   }
 
-  get maxBet() {
-    return Math.max(...Object.values(this.state.bets));
+  actualizePossibility(isInitialCheck) {
+    if (isInitialCheck) {
+      this.players.forEach(player => {
+        if (!player.hasMoney(this.state.smallBlind * 2)) {
+          this.kickPlayer(player);
+        }
+      });
+    }
+
+    if (this.activePlayers.length < 2) {
+      this.state.canContinue = false;
+    }
   }
 
   [PLAYER_ACTIONS.RAISE](player, amount) {
@@ -75,7 +91,12 @@ export default class Game {
   }
 
   [PLAYER_ACTIONS.FOLD](player) {
+    this.kickPlayer(player);
     this.setLogEntry(player.name, PLAYER_ACTIONS.FOLD);
+  }
+
+  kickPlayer(player) {
+    this.state.inactivePlayers[player.name] = true;
   }
 
   takeBlinds() {
@@ -87,15 +108,15 @@ export default class Game {
 
   giveMoneyToWinner() {
     if (this.state.result && !this.state.result.winner) {
-      const amount = this.state.bank / this.players.length;
+      const amount = this.state.bank / this.activePlayers.length;
 
-      this.players.forEach(player => player.takeMoney(amount));
+      this.activePlayers.forEach(player => player.takeMoney(amount));
       this.state.bank = 0;
 
       return;
     }
 
-    this.players
+    this.activePlayers
       .find(player => player.name === this.state.result.winner.name)
       .takeMoney(this.state.bank);
     this.state.bank = 0;
@@ -109,8 +130,8 @@ export default class Game {
     let playersFinishedTurn = 0;
     let playersPointer = 0;
 
-    while (playersFinishedTurn < this.players.length) {
-      const player = this.players[playersPointer];
+    while (playersFinishedTurn < this.activePlayers.length) {
+      const player = this.activePlayers[playersPointer];
       const maxBet = this.maxBet;
       const hasEnoughMoney = player.hasMoney(maxBet);
       const availablePlayerActions = {
@@ -129,7 +150,9 @@ export default class Game {
         playersFinishedTurn = 1;
       }
 
-      playersPointer++;
+      playersPointer = playersPointer + 1 >= this.activePlayers.length
+        ? 0
+        : playersPointer + 1;
     }
 
     this.state.bets = this.players.reduce((playersMap, player) => {
@@ -162,11 +185,24 @@ export default class Game {
     this.state.bank = 0;
     this.state.result = null;
     this.state.isFinished = false;
+    this.state.inactivePlayers = {};
+    this.actualizePossibility(true);
     this.deck = new Deck();
     this._gen = this.game();
   }
 
   tick() {
+    this.actualizePossibility();
+
+    if (!this.state.canContinue) {
+      if (!this.state.isFinished) {
+        this.activePlayers[0].takeMoney(this.state.bank);
+        this.state.bank = 0;
+      }
+
+      return;
+    }
+
     const { done } = this._gen.next();
 
     if (done) {

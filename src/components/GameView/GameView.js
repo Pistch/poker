@@ -9,6 +9,33 @@ import ResultView from '../ResultView';
 
 import classes from './GameView.module.css';
 
+function wait(ms) {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms);
+  });
+}
+
+async function gameAutoRunner(mGame) {
+  while (true) {
+    mGame.start();
+
+    if (!mGame.state.canContinue) {
+      return;
+    }
+
+    while (mGame.state.canContinue && !mGame.state.isFinished) {
+      try {
+        mGame.tick();
+      } catch (e) {
+        console.log(mGame.state.log);
+        throw e;
+      }
+
+      await wait(20);
+    }
+  }
+}
+
 export default function GameView() {
   const player1 = new Player({
     name: 'Joseph',
@@ -23,7 +50,7 @@ export default function GameView() {
   const Player2Container = getContainer(player2);
   const GameContainer = getContainer(game);
 
-  game.start();
+  gameAutoRunner(game);
 
   return (
     <div>
@@ -31,8 +58,10 @@ export default function GameView() {
       <button onClick={() => game.start()}>Restart</button>
       <div className={classes.players}>
         <Player1Container component={PlayerView} />
-        <GameContainer component={({bets}) => (
+        <GameContainer component={({bets, bank}) => (
           <pre>
+            <b>Bank: </b>{bank}{'\n\n'}
+
             <b>Bets:</b>{'\n\n'}
 
             {Object.keys(bets).map(playerName => `${playerName}: ${bets[playerName]}\n`)}
