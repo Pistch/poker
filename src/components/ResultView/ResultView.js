@@ -1,4 +1,15 @@
 import React from 'react';
+import upperFirst from 'lodash-es/upperFirst';
+
+function getCombinationName(combination) {
+  return `${
+    combination.name.toLowerCase().replace('_', ' ')
+  } of ${combination.value}`;
+}
+
+function PlayerName({ player }) {
+  return <b>{upperFirst(player.name)}</b>;
+}
 
 export default function ResultView(props) {
   if (!props.result) {
@@ -11,13 +22,17 @@ export default function ResultView(props) {
     <div>
       {playersResults.map(({player, combination}) => {
         return (
-          <p key={player.name}>Player {player.name} got {combination.name} of {combination.value}</p>
+          <p key={player.name}>
+            <PlayerName player={player} /> got <i>{getCombinationName(combination)}</i>
+          </p>
         );
       })}
       {!winner ? (
         <p><b>Draw!</b></p>
       ) : (
-        <p>Player {winner.name} wins!</p>
+        <p>
+          <PlayerName player={winner} /> wins!
+        </p>
       )}
     </div>
   )

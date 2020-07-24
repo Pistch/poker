@@ -58,5 +58,11 @@ export const COMBINATIONS_RANKING = [
   COMBINATION_NAMES.TWO_PAIRS,
   COMBINATION_NAMES.PAIR,
   COMBINATION_NAMES.KICKER
-]
+];
+export const PLAYER_ACTIONS = {
+  RAISE: 'raise',
+  CALL: 'call',
+  CHECK: 'check',
+  FOLD: 'fold'
+};
 

@@ -1,3 +1,4 @@
+import { PLAYER_ACTIONS } from '../constants';
 import { State } from '../lib/state';
 
 export default class Player {
@@ -27,5 +28,40 @@ export default class Player {
 
   get hand() {
     return this.state.cards;
+  }
+
+  hasMoney(amount) {
+    return this.state.money >= amount;
+  }
+
+  giveMoney(amount) {
+    if (amount <= this.state.money) {
+      this.state.money = this.state.money - amount;
+
+      return amount;
+    }
+
+    const possibleGiveaway = this.state.money;
+
+    this.state.money = 0;
+
+    return possibleGiveaway;
+  }
+
+  takeMoney(amount) {
+    this.state.money = this.state.money + amount;
+  }
+
+  performAction(availableActions) {
+    const actionsPriority = [PLAYER_ACTIONS.CHECK, PLAYER_ACTIONS.CALL, PLAYER_ACTIONS.FOLD];
+    const action = actionsPriority.find(actionName => {
+      if (!availableActions[actionName]) {
+        return null;
+      }
+
+      return true;
+    });
+
+    return { action, amount: 0 };
   }
 }
