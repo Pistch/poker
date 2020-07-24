@@ -1,51 +1,38 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import './variables.css';
 
-import Deck from './models/Deck';
-import Combination from './models/Combination';
-import CardList from './components/CardList';
-
-const mDeck = new Deck();
-
-function getGameSituation() {
-  return [
-    mDeck.drawFewCards(5),
-    mDeck.drawFewCards(2),
-    mDeck.drawFewCards(2)
-  ];
-}
+import { getContainer } from './lib/state';
+import Player from './models/Player';
+import Game from './models/Game';
+import PlayerView from './components/PlayerView';
+import TableView from './components/TableView';
+import ResultView from './components/ResultView';
 
 export default function App() {
-  const [cardList, setCardList] = useState(getGameSituation());
-  const getNewSituation = () => {
-    mDeck.fill();
-    setCardList(getGameSituation());
-  };
-  const [table, hand1, hand2] = cardList;
-  const c1 = new Combination(hand1, table);
-  const c2 = new Combination(hand2, table);
-  const best1 = c1.getBest();
-  const best2 = c2.getBest();
-  const result = Combination.compare(c1, c2);
-  const isKickerDecision = best1.name === best2.name && best1.value === best2.value;
+  const player1 = new Player({
+    name: '1',
+    money: 1000
+  });
+  const player2 = new Player({
+    name: '2',
+    money: 1000
+  });
+  const game = new Game([player1, player2]);
+  const Player1Container = getContainer(player1);
+  const Player2Container = getContainer(player2);
+  const GameContainer = getContainer(game);
+
+  game.start();
 
   return (
     <div>
-      <h4>Hand 1:</h4>
-      <CardList cards={hand1} />
-      <h4>Hand 2:</h4>
-      <CardList cards={hand2} />
-      <h4>Table:</h4>
-      <CardList cards={table} />
-      <p>Player 1 got {best1.name} at {best1.value}{isKickerDecision && ` (kicker ${c1.KICKER()})`}</p>
-      <p>Player 2 got {best2.name} at {best2.value}{isKickerDecision && ` (kicker ${c2.KICKER()})`}</p>
-      {!result ? (
-        <p><b>Draw!</b></p>
-      ) : (
-        <p>Player {result > 0 ? '1' : '2'} wins!</p>
-      )}
-      <button onClick={getNewSituation}>Make another</button>
+      <button onClick={() => game.tick()}>Next move</button>
+      <button onClick={() => game.start()}>Restart</button>
+      <Player1Container component={PlayerView} />
+      <Player2Container component={PlayerView} />
+      <GameContainer component={TableView} />
+      <GameContainer component={ResultView} />
     </div>
   );
 }

@@ -82,16 +82,20 @@ export class State {
   }
 }
 
-export function getContainer(stateModel, methods) {
+function defaultDataMapper(modelState) {
+  return modelState;
+}
+
+export function getContainer(stateModel, methods, dataMapper = defaultDataMapper) {
   return class Container extends React.PureComponent {
-    state = stateModel.get();
+    state = stateModel.state.get();
 
     componentDidMount() {
-      stateModel.registerHandler(this.setInnerState);
+      stateModel.state.registerHandler(this.setInnerState);
     }
 
     componentWillUnmount() {
-      stateModel.dropHandler(this.setInnerState);
+      stateModel.state.dropHandler(this.setInnerState);
     }
 
     setInnerState = (diff) => {
@@ -101,7 +105,7 @@ export function getContainer(stateModel, methods) {
     render()  {
       const { component: Component } = this.props;
 
-      return <Component {...this.state} {...methods} />;
+      return <Component {...dataMapper(this.state)} {...methods} />;
     }
   }
 }
