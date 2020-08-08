@@ -31,7 +31,7 @@ async function gameAutoRunner(mGame) {
         throw e;
       }
 
-      await wait(20);
+      await wait(50);
     }
   }
 }
@@ -54,8 +54,6 @@ export default function GameView() {
 
   return (
     <div>
-      <button onClick={() => game.tick()}>Next move</button>
-      <button onClick={() => game.start()}>Restart</button>
       <div className={classes.players}>
         <Player1Container component={PlayerView} />
         <GameContainer component={({bets, bank}) => (
