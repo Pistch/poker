@@ -37,8 +37,10 @@ export default class Game {
   }
 
   * giveCardsToPlayers() {
-    for (let i = 0; i < this.players.length; i++) {
-      yield this.players[i].takeCard(this._getNextCard());
+    const activePlayers = this.activePlayers;
+
+    for (let i = 0; i < activePlayers.length; i++) {
+      yield activePlayers[i].takeCard(this._getNextCard());
     }
   }
 
@@ -211,7 +213,8 @@ export default class Game {
   }
 
   getResult() {
-    const results = this.players.map(
+    const activePlayers = this.activePlayers;
+    const results = activePlayers.map(
       player => ({
         player,
         combination: new Combination(player.hand, this.state.tableCards)
@@ -226,7 +229,7 @@ export default class Game {
       playersResults: results.map(result => ({...result, combination: result.combination.getBest()})),
       winner: !comparatorResult
         ? null
-        : comparatorResult > 0 ? this.players[0] : this.players[1]
+        : comparatorResult > 0 ? activePlayers[0] : activePlayers[1]
     };
   }
 }

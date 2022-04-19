@@ -31,7 +31,7 @@ async function gameAutoRunner(mGame) {
         throw e;
       }
 
-      await wait(50);
+      await wait(10);
     }
   }
 }
@@ -45,9 +45,14 @@ export default function GameView() {
     name: 'Jessica',
     money: 1000
   });
-  const game = new Game([player1, player2]);
+  const player3 = new Player({
+    name: 'Joshuah',
+    money: 1000
+  });
+  const game = new Game([player1, player2, player3]);
   const Player1Container = getContainer(player1);
   const Player2Container = getContainer(player2);
+  const Player3Container = getContainer(player3);
   const GameContainer = getContainer(game);
 
   gameAutoRunner(game);
@@ -55,7 +60,6 @@ export default function GameView() {
   return (
     <div>
       <div className={classes.players}>
-        <Player1Container component={PlayerView} />
         <GameContainer component={({bets, bank}) => (
           <pre>
             <b>Bank: </b>{bank}{'\n\n'}
@@ -65,7 +69,9 @@ export default function GameView() {
             {Object.keys(bets).map(playerName => `${playerName}: ${bets[playerName]}\n`)}
           </pre>
         )} />
+        <Player1Container component={PlayerView} />
         <Player2Container component={PlayerView} />
+        <Player3Container component={PlayerView} />
       </div>
       <GameContainer component={TableView} />
       <GameContainer component={ResultView} />
