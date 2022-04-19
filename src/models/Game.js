@@ -109,18 +109,18 @@ export default class Game {
   }
 
   giveMoneyToWinner() {
-    if (this.state.result && !this.state.result.winner) {
-      const amount = this.state.bank / this.activePlayers.length;
-
-      this.activePlayers.forEach(player => player.takeMoney(amount));
-      this.state.bank = 0;
-
+    if (!this.state.result) {
       return;
     }
 
-    this.activePlayers
-      .find(player => player.name === this.state.result.winner.name)
-      .takeMoney(this.state.bank);
+    if (Array.isArray(this.state.result.winner)) {
+      const amount = this.state.bank / this.state.result.winner.length;
+
+      this.state.result.winner.forEach(player => player.takeMoney(amount));
+    } else {
+      this.state.result.winner.takeMoney(this.state.bank);
+    }
+
     this.state.bank = 0;
   }
 
@@ -220,16 +220,49 @@ export default class Game {
         combination: new Combination(player.hand, this.state.tableCards)
       })
     );
-    const comparatorResult = Combination.compare(
-      results[0].combination,
-      results[1].combination
-    );
+    const comparatorResult = results.sort((r1, r2) => Combination.compare(
+      r1.combination,
+      r2.combination
+    )).reduce((acc, result, index, allResults) => {
+      const isFirst = index === 0;
+      const isLast = index === allResults.length - 1;
+      let isResultPlaced = false;
+
+      if (!isFirst) {
+        const previousResultRank = acc[acc.length - 1];
+        const previousResult = allResults[index - 1];
+
+        if (
+            Array.isArray(previousResultRank) &&
+            !Combination.compare(previousResult.combination, result.combination)
+        ) {
+          previousResultRank.push(result.player);
+          isResultPlaced = true;
+        }
+      }
+
+      if (!isLast && !isResultPlaced) {
+        const nextResult = allResults[index + 1];
+
+        if (!Combination.compare(nextResult.combination, result.combination)) {
+          acc.push([result.player]);
+          isResultPlaced = true;
+        }
+      }
+
+      if (!isResultPlaced) {
+        acc.push(result.player);
+      }
+
+      return acc;
+    }, []);
 
     return {
-      playersResults: results.map(result => ({...result, combination: result.combination.getBest()})),
-      winner: !comparatorResult
-        ? null
-        : comparatorResult > 0 ? activePlayers[0] : activePlayers[1]
+      playersResults: results.map(result => ({
+        ...result,
+        combination: result.combination.getBest()
+      })),
+      winner: comparatorResult[0],
     };
   }
 }

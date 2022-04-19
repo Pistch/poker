@@ -17,6 +17,8 @@ export default function ResultView(props) {
   }
 
   const { playersResults, winner } = props.result;
+  const isDraw = Array.isArray(winner);
+  const isTotalDraw = isDraw && winner.length === playersResults.length;
 
   return (
     <div>
@@ -27,8 +29,18 @@ export default function ResultView(props) {
           </p>
         );
       })}
-      {!winner ? (
-        <p><b>Draw!</b></p>
+      {isDraw ? (
+        <p>
+          <b>Draw</b>
+          {!isTotalDraw && (
+              <span> between {winner.map(player => (
+                  <React.Fragment>
+                    <PlayerName player={player} key={player.name} />
+                    {' '}
+                  </React.Fragment>
+              ))}</span>
+          )}
+        </p>
       ) : (
         <p>
           <PlayerName player={winner} /> wins!

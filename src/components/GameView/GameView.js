@@ -33,6 +33,8 @@ async function gameAutoRunner(mGame) {
 
       await wait(10);
     }
+
+    await wait(10000);
   }
 }
 

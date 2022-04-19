@@ -259,21 +259,21 @@ export default class Combination {
     const c2rank = COMBINATIONS_RANKING.indexOf(c2data.name);
 
     if (c1rank > c2rank) {
-      return -1;
+      return 1;
     } else if (c1rank < c2rank) {
-      return 1;
-    } else if (c1data.value > c2data.value) {
-      return 1;
-    } else if (c1data.value < c2data.value) {
       return -1;
+    } else if (c1data.value > c2data.value) {
+      return -1;
+    } else if (c1data.value < c2data.value) {
+      return 1;
     } else {
       const c1Kicker = c1[COMBINATION_NAMES.KICKER]();
       const c2Kicker = c2[COMBINATION_NAMES.KICKER]();
 
       if (c1Kicker > c2Kicker) {
-        return 1;
-      } else if (c1Kicker < c2Kicker) {
         return -1;
+      } else if (c1Kicker < c2Kicker) {
+        return 1;
       }
 
       return 0;
