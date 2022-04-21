@@ -1,6 +1,12 @@
 import memoize from 'lodash-es/memoize';
 
-import { CARD_RANKS, COMBINATION_NAMES, COMBINATIONS_RANKING } from '../constants';
+import {
+  CARD_RANKS,
+  COMBINATION_NAMES,
+  COMBINATIONS_RANKING,
+  CARD_TYPES_BY_VALUE,
+  CARD_SUITS_NAMES
+} from '../constants';
 
 const buildValueMap = memoize(function (cards) {
   return cards.reduce((map, card) => {
@@ -27,6 +33,34 @@ export default class Combination {
     this.handCards = handCards;
     this.tableCards = tableCards;
     this.cards = [...handCards, ...tableCards];
+  }
+
+  toString(shouldShowKicker) {
+    const bestCombo = this.getBest();
+    const hasNoun = bestCombo.name !== COMBINATION_NAMES.ROYAL_FLUSH;
+    const getCardValueName = value => CARD_TYPES_BY_VALUE[value].name;
+    const defaultNounGetter = combo => `of ${getCardValueName(combo.value)}s`;
+    const nounGetters = {
+      [COMBINATION_NAMES.KICKER]: (combo) => getCardValueName(combo.value),
+      [COMBINATION_NAMES.TWO_PAIRS]: () => `of ${this._getPairs().map(pair => getCardValueName(pair[0].rank.value) + 's').join(' and ')}`,
+      [COMBINATION_NAMES.STRAIGHT]: (combo) => `to ${getCardValueName(combo.value)}`,
+      [COMBINATION_NAMES.FLUSH]: () => {
+        const suits = this._getMapBySuit();
+        const suitName = Object.values(CARD_SUITS_NAMES).find(suitName => suits[suitName] && suits[suitName].length === 5);
+
+        return `of ${suitName}`;
+      },
+      [COMBINATION_NAMES.FULL_HOUSE]: (combo) => `of ${getCardValueName(combo.value)}s and ${getCardValueName(this[COMBINATION_NAMES.PAIR]())}s`,
+      [COMBINATION_NAMES.STRAIGHT_FLUSH]: (combo) => `${nounGetters[COMBINATION_NAMES.FLUSH]()} ${nounGetters[COMBINATION_NAMES.STRAIGHT](combo)}`,
+      [COMBINATION_NAMES.ROYAL_FLUSH]: () => '',
+    };
+    const noun = hasNoun ? (nounGetters[bestCombo.name] || defaultNounGetter)(bestCombo) : '';
+
+    return [
+      `${bestCombo.name.toLowerCase().replace('_', ' ')}`,
+      noun,
+      shouldShowKicker && bestCombo.name !== COMBINATION_NAMES.KICKER && `with kicker ${CARD_TYPES_BY_VALUE[this[COMBINATION_NAMES.KICKER]()].name}`
+    ].filter(Boolean).join(' ');
   }
 
   _getMapByValue = () => buildValueMap(this.cards);

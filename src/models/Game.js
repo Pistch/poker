@@ -219,11 +219,11 @@ export default class Game {
         player,
         combination: new Combination(player.hand, this.state.tableCards)
       })
-    );
-    const comparatorResult = results.sort((r1, r2) => Combination.compare(
-      r1.combination,
-      r2.combination
-    )).reduce((acc, result, index, allResults) => {
+    ).sort((r1, r2) => Combination.compare(
+        r1.combination,
+        r2.combination
+    ));
+    const comparatorResult = results.reduce((acc, result, index, allResults) => {
       const isFirst = index === 0;
       const isLast = index === allResults.length - 1;
       let isResultPlaced = false;
@@ -257,12 +257,50 @@ export default class Game {
       return acc;
     }, []);
 
+    const winner = comparatorResult[0];
+    const playerCombos = results.map(result => result.combination.getBest());
+    let isKickerIrrelevant = false;
+    const shouldShowKickerForPlayer = playerCombos.map((combo, index) => {
+      if (isKickerIrrelevant) {
+        return false;
+      }
+
+      const isFirst = index === 0;
+      const isLast = index === playerCombos.length - 1;
+
+      if (isFirst && isLast) {
+        isKickerIrrelevant = true;
+
+        return false;
+      } else if (isFirst && !isLast) {
+        const nextPlayerCombo = playerCombos[index + 1];
+        const shouldShowKicker = combo.name === nextPlayerCombo.name && combo.value === nextPlayerCombo.value;
+
+        if (!shouldShowKicker) {
+          isKickerIrrelevant = true;
+        }
+
+        return shouldShowKicker;
+      } else {
+        const previousPlayerCombo = playerCombos[index - 1];
+        const shouldShowKicker = combo.name === previousPlayerCombo.name && combo.value === previousPlayerCombo.value;
+
+        if (!shouldShowKicker) {
+          isKickerIrrelevant = true;
+        }
+
+        return shouldShowKicker;
+      }
+    });
+
     return {
-      playersResults: results.map(result => ({
-        ...result,
-        combination: result.combination.getBest()
-      })),
-      winner: comparatorResult[0],
+      playersResults: results.map((result, index) => {
+        return {
+          ...result,
+          combinationName: result.combination.toString(shouldShowKickerForPlayer[index])
+        };
+      }),
+      winner,
     };
   }
 }
