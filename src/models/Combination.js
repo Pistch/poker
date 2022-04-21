@@ -38,11 +38,14 @@ export default class Combination {
   toString(shouldShowKicker) {
     const bestCombo = this.getBest();
     const hasNoun = bestCombo.name !== COMBINATION_NAMES.ROYAL_FLUSH;
+    const getMultipleEnding = value => value === 6 ? 'es' : 's';
     const getCardValueName = value => CARD_TYPES_BY_VALUE[value].name;
-    const defaultNounGetter = combo => `of ${getCardValueName(combo.value)}s`;
+    const defaultNounGetter = combo => `of ${getCardValueName(combo.value)}${getMultipleEnding(combo.value)}`;
     const nounGetters = {
       [COMBINATION_NAMES.KICKER]: (combo) => getCardValueName(combo.value),
-      [COMBINATION_NAMES.TWO_PAIRS]: () => `of ${this._getPairs().map(pair => getCardValueName(pair[0].rank.value) + 's').join(' and ')}`,
+      [COMBINATION_NAMES.TWO_PAIRS]: () => `of ${this._getPairs().reverse().map(pair => (
+          getCardValueName(pair[0].rank.value) + getMultipleEnding(pair[0].rank.value)
+      )).join(' and ')}`,
       [COMBINATION_NAMES.STRAIGHT]: (combo) => `to ${getCardValueName(combo.value)}`,
       [COMBINATION_NAMES.FLUSH]: () => {
         const suits = this._getMapBySuit();
@@ -50,7 +53,7 @@ export default class Combination {
 
         return `of ${suitName}`;
       },
-      [COMBINATION_NAMES.FULL_HOUSE]: (combo) => `of ${getCardValueName(combo.value)}s and ${getCardValueName(this[COMBINATION_NAMES.PAIR]())}s`,
+      [COMBINATION_NAMES.FULL_HOUSE]: (combo) => `${defaultNounGetter(combo)} and ${getCardValueName(this[COMBINATION_NAMES.PAIR]())}${getMultipleEnding(combo.value)}`,
       [COMBINATION_NAMES.STRAIGHT_FLUSH]: (combo) => `${nounGetters[COMBINATION_NAMES.FLUSH]()} ${nounGetters[COMBINATION_NAMES.STRAIGHT](combo)}`,
       [COMBINATION_NAMES.ROYAL_FLUSH]: () => '',
     };
